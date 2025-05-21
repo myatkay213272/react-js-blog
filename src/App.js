@@ -36,7 +36,8 @@ const App = () => {
   )
     const [search,setSeacrch] = useState('')
     // const [searchResults,setSearchResults] = useState([])
-
+    const [postTitle,setPostTitle] = useState('')
+    const [postBody,setPostBody] = useState('')
     const navigate = useNavigate()
 
     const handleDelete = (id)=>{
@@ -45,15 +46,33 @@ const App = () => {
       navigate('/')
     }
 
+    const handleSubmit = (e)=>{
+      e.preventDefault()
+      const id=posts.length ? posts[posts.length-1].id + 1 : 1
+      const datetime = '' 
+    }
+
   return (
     <>
       <Header title="React JS Blog" />
       <Nav search={search} setSeacrch={setSeacrch}/>
 
       <Routes>
-        <Route path="/" element={<Home  posts={posts} setPosts={setPosts}/>} />
-        <Route path="/post" element={<NewPost />} />
-        <Route path="/post/:id" element={<PostPage posts={posts} handleDelete = {handleDelete}/>} />
+        <Route path="/" element={<Home  
+                                  posts={posts} 
+                                  setPosts={setPosts}
+                                />} />
+        <Route path="/post" element={<NewPost 
+                                      handleSubmit={handleSubmit}
+                                      postTitle={postTitle} 
+                                      setPostTitle={setPostTitle}
+                                      postBody={postBody}
+                                      setPostBody={setPostBody}
+                                    />} />
+        <Route path="/post/:id" element={<PostPage 
+                                          posts={posts} 
+                                          handleDelete={handleDelete}
+                                        />} />
         <Route path="/about" element={<About />} />
         <Route path="*" element={<Missing />} />
       </Routes>
