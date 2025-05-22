@@ -7,44 +7,28 @@ import PostPage from './Components/PostPage'
 import About from './Components/About'
 import Missing from './Components/Missing'
 import Footer from './Components/Footer'
-import { Routes, Route, useNavigate } from 'react-router-dom'
+import { Routes, Route, useNavigate} from 'react-router-dom'
 import {format} from 'date-fns'
 import apiClient from './api/apiClent'
 import EditPost from './Components/EditPost'
+import useAxiosFetch from './hooks/useAxiosFetch'
 
 const App = () => {
 
   const [posts,setPosts] = useState([])
+  const [search,setSearch] = useState('')
+  const [searchResults,setSearchResults] = useState([])
+  const [postTitle,setPostTitle] = useState('')
+  const [postBody,setPostBody] = useState('')
+  const [editTitle,setEditTitle] = useState('')
+  const [editBody,setEditBody] = useState('')
+  const navigate = useNavigate()
 
-    const [search,setSearch] = useState('')
-    const [searchResults,setSearchResults] = useState([])
-    const [postTitle,setPostTitle] = useState('')
-    const [postBody,setPostBody] = useState('')
-    const [editTitle,setEditTitle] = useState('')
-    const [editBody,setEditBody] = useState('')
-    const navigate = useNavigate()
-
-    useEffect(()=>{
-
-      const fetchPosts = async ()=>{
-        try{
-          const response = await apiClient.get('/post')
-          setPosts(response.data)
-        }catch(err){
-          if(err.response){
-            console.log(err.response.data)
-            console.log(err.response.status)
-            console.log(err.response.headers)
-          }else{
-            console.log(`Error : ${err.message}`)
-          }
-        }
-      }
-
-      fetchPosts()
-
-    },[])
-
+  const {data,fetchError,isLoading} = useAxiosFetch('http://localhost:3500/post') 
+  
+  useEffect(()=>{
+    setPosts(data)
+  },[data])
 
     useEffect(()=>{
 
@@ -71,7 +55,7 @@ const App = () => {
       //   "Hey server, here’s a new post. Add it."
       //   "Okay, server gave it back. Let me add this new post to my list of posts."
       const response = await apiClient.post('/post',newPost)
-      // console.log(response)
+      console.log(response)
       const allPosts = [...posts, response.data];
       setPosts(allPosts);
       setPostTitle('');
@@ -124,6 +108,8 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home  
                                   posts={searchResults} 
+                                  fetchError={fetchError}
+                                  isLoading={isLoading}
                                 />} />
         <Route path="/post" element={<NewPost 
                                       handleSubmit={handleSubmit}
