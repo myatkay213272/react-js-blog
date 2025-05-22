@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-const Nav = ({ search, setSearch }) => {
+const Nav = ({ search,  setSearch }) => {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
       <div className="container-fluid">
@@ -11,7 +11,7 @@ const Nav = ({ search, setSearch }) => {
             type="search"
             placeholder="Search Posts"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) =>  setSearch(e.target.value)}
           />
         </form>
 

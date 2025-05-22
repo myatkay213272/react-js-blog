@@ -1,7 +1,9 @@
 const Footer = () => {
+  const today = new Date()
+
   return (
     <footer className="bg-dark text-white text-center py-2 mt-auto">
-      <p>React Blog &copy; 2025</p>
+      <p>React Blog &copy; {today.getFullYear()}</p>
     </footer>
   );
 };
