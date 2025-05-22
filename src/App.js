@@ -9,37 +9,41 @@ import Missing from './Components/Missing'
 import Footer from './Components/Footer'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import {format} from 'date-fns'
+import apiClient from './api/apiClent'
+import EditPost from './Components/EditPost'
 
 const App = () => {
 
-  const [posts,setPosts] = useState(
-    [
-  {
-    id: 1,
-    title: "First Post",
-    datetime: "2025-05-21 10:00 AM",
-    body: "This is the body of the first post."
-  },
-  {
-    id: 2,
-    title: "Second Post",
-    datetime: "2025-05-21 11:30 AM",
-    body: "This is the body of the second post."
-  },
-  {
-    id: 3,
-    title: "Third Post",
-    datetime: "2025-05-21 13:45 PM",
-    body: "This is the body of the third post."
-  }
-]
+  const [posts,setPosts] = useState([])
 
-  )
     const [search,setSearch] = useState('')
     const [searchResults,setSearchResults] = useState([])
     const [postTitle,setPostTitle] = useState('')
     const [postBody,setPostBody] = useState('')
+    const [editTitle,setEditTitle] = useState('')
+    const [editBody,setEditBody] = useState('')
     const navigate = useNavigate()
+
+    useEffect(()=>{
+
+      const fetchPosts = async ()=>{
+        try{
+          const response = await apiClient.get('/post')
+          setPosts(response.data)
+        }catch(err){
+          if(err.response){
+            console.log(err.response.data)
+            console.log(err.response.status)
+            console.log(err.response.headers)
+          }else{
+            console.log(`Error : ${err.message}`)
+          }
+        }
+      }
+
+      fetchPosts()
+
+    },[])
 
 
     useEffect(()=>{
@@ -53,35 +57,64 @@ const App = () => {
     },[search,posts])
 
 
-
-    const handleDelete = (id)=>{
-      const postsList = posts.filter(post=>post.id !== id)
-      setPosts(postsList)
-      navigate('/')
-    }
-
-   const handleSubmit = (e) => {
+   const handleSubmit = async(e) => {
     e.preventDefault();
-
     const id = posts.length ? posts[posts.length - 1].id + 1 : 1;
-
     const datetime = format(new Date(), 'MMM dd,yyy pp');
-
     const newPost = {
       id,
       title: postTitle,
       datetime,
       body: postBody
     };
-
-    const allPosts = [...posts, newPost];
-
-    setPosts(allPosts);
-    setPostTitle('');
-    setPostBody('');
-    navigate('/');
+    try{
+      //   "Hey server, here’s a new post. Add it."
+      //   "Okay, server gave it back. Let me add this new post to my list of posts."
+      const response = await apiClient.post('/post',newPost)
+      // console.log(response)
+      const allPosts = [...posts, response.data];
+      setPosts(allPosts);
+      setPostTitle('');
+      setPostBody('');
+      navigate('/');
+    }catch(err){
+      console.log(`Error : ${err.message}`)
+    }
   };
 
+    const handleEdit = async(id)=>{
+      const datetime = format(new Date(),'MMM dd,yyy pp')
+      const updatedPost = {
+        id,
+        title : editTitle,
+        datetime,
+        body : editBody
+      }
+
+      try{
+        const response = await apiClient.put(`/post/${id}`,updatedPost)
+        setPosts(posts.map(post=>post.id === id ? {...response.data} : post))
+        setEditTitle('')
+        setEditBody('')
+        navigate('/')
+      }catch(err){
+        console.log(`Error : ${err.message}`)
+      }
+    }
+
+
+    const handleDelete =async (id)=>{
+      try{
+
+        const response = await apiClient.delete(`/post/${id}`)
+        const postsList = posts.filter(post=>post.id !== id)
+        setPosts(postsList)
+        navigate('/')
+
+      }catch(err){
+      console.log(`Error : ${err.message}`)
+      }
+    }
 
   return (
     <>
@@ -98,6 +131,14 @@ const App = () => {
                                       setPostTitle={setPostTitle}
                                       postBody={postBody}
                                       setPostBody={setPostBody}
+                                    />} />
+        <Route path="/edit/:id" element={<EditPost
+                                      posts={posts}
+                                      handleEdit={handleEdit}
+                                      editTitle={editTitle} 
+                                      setEditTitle={setEditTitle}
+                                      editBody={editBody}
+                                      setEditBody={setEditBody}
                                     />} />
         <Route path="/post/:id" element={<PostPage 
                                           posts={posts} 
